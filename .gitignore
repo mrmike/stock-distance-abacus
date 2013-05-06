@@ -4,3 +4,16 @@
 *.jar
 *.war
 *.ear
+
+# generate files
+bin/
+gen/
+
+# Class path
+.classpath
+
+# Project files
+.project
+
+# Log files
+.log
