@@ -17,3 +17,6 @@ gen/
 
 # Log files
 .log
+
+# DS_STORE
+.DS_Store
