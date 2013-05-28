@@ -1,6 +1,7 @@
 package com.moczul.stock.abacus;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Stock {
@@ -54,6 +55,10 @@ public class Stock {
 			double normalizePrice = (price - avg) / stdDev;
 			mNormalizePrices.add(normalizePrice);
 		}
+	}
+	
+	public void reversePrices() {
+		Collections.reverse(mPrices);
 	}
 
 	public List<Double> getNormalizePrices() {
