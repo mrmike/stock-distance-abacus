@@ -20,3 +20,6 @@ gen/
 
 # DS_STORE
 .DS_Store
+
+# Stock data
+stock_data/
