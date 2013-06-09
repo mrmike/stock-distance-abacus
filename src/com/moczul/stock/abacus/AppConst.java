@@ -1,9 +1,9 @@
 package com.moczul.stock.abacus;
 
 public class AppConst {
-	
+
 	public static final String YAHOO_FORMAT = "http://ichart.finance.yahoo.com/table.csv?s=%1$s&a=%2$d&b=%3$d&c=%4$d&g=d&d=%5$d&e=%6$d&f=%7$d&ignore=.csv";
-	
+
 	// Constants for csv files from finance.yahoo.com
 	public static final int YAHOO_DATE = 0;
 	public static final int YAHOO_OPEN = 1;
@@ -12,6 +12,8 @@ public class AppConst {
 	public static final int YAHOO_CLOSE = 4;
 	public static final int YAHOO_VOLUME = 5;
 	public static final int YAHOO_ADJ_CLOSE = 6;
+
+	public static final String STOOQ_FORMAT = "http://stooq.pl/q/d/l/?s=%1$s&d1=%2$s&d2=%3$s&i=d";
 
 	// Constants for csv files from stooq.pl
 	public static final int STOOQ_DATE = 0;

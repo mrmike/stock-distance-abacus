@@ -11,7 +11,9 @@ public class Runner {
 
 	public static void main(String[] args) throws IOException {
 
-		List<Stock> stocks = getYahooStocks();
+		// List<Stock> stocks = getYahooStocks();
+		// List<Stock> stocks = calcDistanceFromFiles();
+		List<Stock> stocks = getStooqStocks();
 		List<Result> results = new ArrayList<Result>();
 
 		// calculate distance
@@ -20,7 +22,7 @@ public class Runner {
 			Stock stock = stocks.get(i);
 			for (int k = i + 1; k < stocks.size(); k++) {
 				Stock pairStock = stocks.get(k);
-				double distance = Utils.calcDistance(stock, pairStock);
+				double distance = Utils.calcDistance(stock, pairStock, 252, 0);
 				Result result = new Result(stock, pairStock, distance);
 				result.printSummary(order);
 				results.add(result);
@@ -29,13 +31,15 @@ public class Runner {
 		}
 
 		Collections.sort(results, new ResultComparator());
-		// print 30 best results
 		System.out.println("=======================");
 		System.out.println("Best results: ");
-		for (int i = 0; i < 50; i++) {
-			results.get(i).printSummary(i+1);
+		for (Result r : results) {
+			r.printSummary();
 		}
-
+		for (int i = 0; i < 30; i++) {
+			Result r = results.get(i);
+			r.printSummary(i+1);
+		}
 	}
 
 	private static List<Stock> getYahooStocks() throws IOException {
@@ -55,6 +59,48 @@ public class Runner {
 		}
 
 		return stocks;
+	}
+
+	private static List<Stock> getStooqStocks() throws IOException {
+		String[] symbols = new String[] { "acp", "brs", "bre", "eur", "lts",
+				"gtc", "bhw", "cez", "ker", "kgh", "peo", "ago", "pgn", "pkn",
+				"pko", "sns", "bio", "tps", "alc", "apt", "ast", "bdx",
+				"cdr", "cie", "eat", "ech", "emp", "gnb", "gtn", "hwe", "idm",
+				"ing", "itg", "kgn", "kpx", "kty", "lpp", "mds", "mil", "net",
+				"oil", "orb", "pxm", "tvn" };
+		String pathFormat = "stq_stock_data/2008_2012/%s_d.csv";
+
+		List<Stock> stocks = new ArrayList<Stock>();
+		for (String symbol : symbols) {
+			String path = String.format(pathFormat, symbol);
+			Stock stock = Utils.getStockFromFile(symbol, path);
+			if (stock != null) {
+				stocks.add(stock);
+			}
+		}
+
+		return stocks;
+	}
+
+	private static final void printUrls() {
+		String[] wig20 = new String[] { "acp", "cps", "brs", "bre", "eur",
+				"lts", "gtc", "bhw", "cez", "ker", "kgh", "peo", "ago", "pgn",
+				"pkn", "pko", "sns", "bio", "tps" };
+		String[] mwig40 = new String[] { "alc", "apt", "ast", "att", "bdx",
+				"bio", "car", "ccc", "cci", "cdr", "cie", "crm", "eat", "ech",
+				"emp", "ena", "gnb", "gpw", "gtn", "hwe", "idm", "ing", "itg",
+				"kgn", "kov", "kpx", "kty", "lpp", "mds", "mil", "net", "nwr",
+				"oil", "orb", "pxm", "tvn", "zep" };
+		for (String wig : wig20) {
+			String url = Utils.getStooqUrl(wig, 1, 1, 2008, 31, 12, 2012);
+			System.out.println(url);
+			System.out.println("\n");
+		}
+		for (String mwig : mwig40) {
+			String url = Utils.getStooqUrl(mwig, 1, 1, 2008, 31, 12, 2012);
+			System.out.println(url);
+			System.out.println("\n");
+		}
 	}
 
 	private static List<Stock> calcDistanceFromFiles() throws IOException {
@@ -80,6 +126,15 @@ public class Runner {
 
 		return stocks;
 
+	}
+
+	private static List<Stock> getPKOStocks() throws IOException {
+		List<Stock> stocks = new ArrayList<Stock>();
+
+		stocks.add(Utils.getStockFromFile("PKO", "stock_data/pko_2007.csv"));
+		stocks.add(Utils.getStockFromFile("PEO", "stock_data/peo_2007.csv"));
+
+		return stocks;
 	}
 
 }

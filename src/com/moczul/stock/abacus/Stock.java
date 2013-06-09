@@ -46,24 +46,34 @@ public class Stock {
 		return Math.pow(sum / mPrices.size(), 0.5);
 	}
 
-	public void calcNormalizePrices() {
+	private void calcNormalizePrices(int period, int offset) {
+		if (period + offset > mPrices.size()) {
+			throw new IllegalArgumentException(
+					"Given period and offset is longer than data-size");
+		}
 		mNormalizePrices = new ArrayList<Double>();
 		double avg = getAverage();
 		double stdDev = getStdDev();
 
-		for (Double price : mPrices) {
+		for (int i = offset; i < period + offset; i++) {
+			double price = mPrices.get(i);
 			double normalizePrice = (price - avg) / stdDev;
 			mNormalizePrices.add(normalizePrice);
 		}
 	}
-	
+
 	public void reversePrices() {
 		Collections.reverse(mPrices);
 	}
 
 	public List<Double> getNormalizePrices() {
-		if (mNormalizePrices == null) {
-			calcNormalizePrices();
+		return getNormalizePrices(mPrices.size(), 0);
+	}
+
+	public List<Double> getNormalizePrices(int period, int offset) {
+		// TODO add offset feature
+		if (mNormalizePrices == null || mNormalizePrices.size() != period) {
+			calcNormalizePrices(period, offset);
 		}
 
 		return mNormalizePrices;

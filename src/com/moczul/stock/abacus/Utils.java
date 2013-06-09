@@ -29,30 +29,39 @@ public class Utils {
 		String line = reader.readLine();
 		while ((line = reader.readLine()) != null) {
 			String[] data = line.split(",");
-			double closePrice = Double.valueOf(data[AppConst.YAHOO_ADJ_CLOSE]);
+			double closePrice = Double
+					.valueOf(data[AppConst.STOOQ_CLOSE_PRICE]);
 			stock.addPrice(closePrice);
 		}
-		
-		// Yahoo has data from latest ones to the oldest one, we should reverse it
+
+		// Yahoo has data from latest ones to the oldest one, we should reverse
+		// it
 		// i believe we should add Date field and sort by date TODO
 		stock.reversePrices();
 
 		// generate normalize price
-		stock.calcNormalizePrices();
+		stock.getNormalizePrices();
 		return stock;
 	}
 
-	public static double calcDistance(Stock a, Stock b) {
+	public static double calcDistance(Stock a, Stock b, int period, int offset) {
 		int size = a.getSize();
+		if (period > size) {
+			throw new IllegalArgumentException("Given period is longer than data-size");
+		}
+		if (Math.abs(size - b.getSize()) > 10) {
+			throw new IllegalArgumentException("Both data set should be the same");
+		}
+		
 		if (size > b.getSize()) {
 			size = b.getSize();
 		}
 
 		double distance = 0;
-		List<Double> normalizeAPrices = a.getNormalizePrices();
-		List<Double> normalizeBPrices = b.getNormalizePrices();
+		List<Double> normalizeAPrices = a.getNormalizePrices(period, offset);
+		List<Double> normalizeBPrices = b.getNormalizePrices(period, offset);
 
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < period; i++) {
 			double priceA = normalizeAPrices.get(i);
 			double priceB = normalizeBPrices.get(i);
 
@@ -61,14 +70,14 @@ public class Utils {
 
 		return distance;
 	}
-	
+
 	public static List<String> getSP500Symbols() {
 		List<String> symbols = new ArrayList<String>();
 		File f = new File("sp500/sp500.csv");
 		if (!f.exists()) {
 			throw new RuntimeException("File sp500.csv does not exist!");
 		}
-		
+
 		BufferedReader reader;
 		try {
 			reader = new BufferedReader(new FileReader(f));
@@ -82,8 +91,40 @@ public class Utils {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return symbols;
+	}
+
+	public static Stock getStockFromStooq(String stockName, Date startDate,
+			Date endDate) throws IOException {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(startDate);
+		int startDay = calendar.get(Calendar.DAY_OF_MONTH);
+		int startMonth = calendar.get(Calendar.MONTH) + 1;
+		int startYear = calendar.get(Calendar.YEAR);
+		calendar.setTime(endDate);
+		int endDay = calendar.get(Calendar.DAY_OF_MONTH);
+		int endMonth = calendar.get(Calendar.MONTH) + 1;
+		int endYear = calendar.get(Calendar.YEAR);
+
+		File directorty = new File("stq_stock_data");
+		if (!directorty.exists()) {
+			directorty.mkdir();
+		}
+
+		String url = getStooqUrl(stockName, startDay, startMonth, startYear,
+				endDay, endMonth, endYear);
+		String fileName = getFileName(stockName, startDay, startMonth,
+				startYear, endDay, endMonth, endYear);
+		File f = new File(fileName);
+		if (f.exists()) {
+//			System.out.println("File " + fileName + " already exists");
+			return getStockFromFile(stockName, f.getPath());
+		}
+
+		downloadFile(f, stockName, url);
+
+		return getStockFromFile(stockName, f.getPath());
 	}
 
 	// perfect case for multi-threading TODO
@@ -98,7 +139,7 @@ public class Utils {
 		int endDay = calendar.get(Calendar.DAY_OF_MONTH);
 		int endMonth = calendar.get(Calendar.MONTH);
 		int endYear = calendar.get(Calendar.YEAR);
-		
+
 		File directorty = new File("stock_data");
 		if (!directorty.exists()) {
 			directorty.mkdir();
@@ -106,12 +147,20 @@ public class Utils {
 
 		String url = getYahooStockUrl(stockName, startDay, startMonth,
 				startYear, endDay, endMonth, endYear);
-		String fileName = getFileName(stockName, startDay, startMonth, startYear, endDay, endMonth, endYear);
+		String fileName = getFileName(stockName, startDay, startMonth,
+				startYear, endDay, endMonth, endYear);
 		File f = new File(fileName);
 		if (f.exists()) {
 			System.out.println("File " + fileName + " already exists");
 			return getStockFromFile(stockName, f.getPath());
 		}
+
+		downloadFile(f, stockName, url);
+
+		return getStockFromFile(stockName, f.getPath());
+	}
+
+	private static void downloadFile(File f, String stockName, String url) {
 		BufferedInputStream inputStream = null;
 		FileOutputStream outputStream = null;
 
@@ -125,11 +174,12 @@ public class Utils {
 			}
 		} catch (MalformedURLException e) {
 			// simply ignore
-			return null;
+			return;
 		} catch (IOException e) {
 			// ignore
-			System.out.println("For this period stock data for " + stockName + " could not be find");
-			return null;
+			System.out.println("For this period stock data for " + stockName
+					+ " could not be find");
+			return;
 		} finally {
 			if (inputStream != null) {
 				try {
@@ -147,9 +197,7 @@ public class Utils {
 			}
 		}
 
-		System.out.println("Downloaded data for " + stockName);
-
-		return getStockFromFile(stockName, f.getPath());
+//		System.out.println("Downloaded data for " + stockName);
 	}
 
 	private static String getFileName(String stockName, int startDay,
@@ -163,5 +211,20 @@ public class Utils {
 			int startMonth, int startYear, int endDay, int endMonth, int endYear) {
 		return String.format(AppConst.YAHOO_FORMAT, stockName, startMonth,
 				startDay, startYear, endMonth, endDay, endYear);
+	}
+
+	public static String getStooqUrl(String stockName, int startDay,
+			int startMonth, int startYear, int endDay, int endMonth, int endYear) {
+		String sDay = String.format("%02d", startDay);
+		String sMonth = String.format("%02d", startMonth);
+		String eDay = String.format("%02d", endDay);
+		String eMonth = String.format("%02d", endMonth);
+
+		String sDate = new StringBuilder().append(startYear).append(sMonth)
+				.append(sDay).toString();
+		String eDate = new StringBuilder().append(endYear).append(eMonth)
+				.append(eDay).toString();
+
+		return String.format(AppConst.STOOQ_FORMAT, stockName, sDate, eDate);
 	}
 }
