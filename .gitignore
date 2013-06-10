@@ -23,6 +23,3 @@ gen/
 
 # Stock data
 stock_data/
-
-# stooq data
-stq_stock_data/

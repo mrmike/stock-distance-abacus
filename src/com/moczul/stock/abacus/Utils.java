@@ -52,7 +52,6 @@ public class Utils {
 		if (Math.abs(size - b.getSize()) > 10) {
 			throw new IllegalArgumentException("Both data set should be the same");
 		}
-		
 		if (size > b.getSize()) {
 			size = b.getSize();
 		}
@@ -61,7 +60,7 @@ public class Utils {
 		List<Double> normalizeAPrices = a.getNormalizePrices(period, offset);
 		List<Double> normalizeBPrices = b.getNormalizePrices(period, offset);
 
-		for (int i = 0; i < period; i++) {
+		for (int i = offset; i < period; i++) {
 			double priceA = normalizeAPrices.get(i);
 			double priceB = normalizeBPrices.get(i);
 
@@ -70,7 +69,7 @@ public class Utils {
 
 		return distance;
 	}
-
+	
 	public static List<String> getSP500Symbols() {
 		List<String> symbols = new ArrayList<String>();
 		File f = new File("sp500/sp500.csv");

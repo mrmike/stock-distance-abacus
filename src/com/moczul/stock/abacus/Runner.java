@@ -37,8 +37,7 @@ public class Runner {
 			r.printSummary();
 		}
 		for (int i = 0; i < 30; i++) {
-			Result r = results.get(i);
-			r.printSummary(i+1);
+			results.get(i).printSummary(i + 1);
 		}
 	}
 
@@ -64,10 +63,10 @@ public class Runner {
 	private static List<Stock> getStooqStocks() throws IOException {
 		String[] symbols = new String[] { "acp", "brs", "bre", "eur", "lts",
 				"gtc", "bhw", "cez", "ker", "kgh", "peo", "ago", "pgn", "pkn",
-				"pko", "sns", "bio", "tps", "alc", "apt", "ast", "bdx",
-				"cdr", "cie", "eat", "ech", "emp", "gnb", "gtn", "hwe", "idm",
-				"ing", "itg", "kgn", "kpx", "kty", "lpp", "mds", "mil", "net",
-				"oil", "orb", "pxm", "tvn" };
+				"pko", "sns", "bio", "tps", "alc", "apt", "ast", "bdx", "cdr",
+				"cie", "eat", "ech", "emp", "gnb", "gtn", "hwe", "idm", "ing",
+				"itg", "kgn", "kpx", "kty", "lpp", "mds", "mil", "net", "oil",
+				"orb", "pxm", "tvn" };
 		String pathFormat = "stq_stock_data/2008_2012/%s_d.csv";
 
 		List<Stock> stocks = new ArrayList<Stock>();
@@ -127,14 +126,4 @@ public class Runner {
 		return stocks;
 
 	}
-
-	private static List<Stock> getPKOStocks() throws IOException {
-		List<Stock> stocks = new ArrayList<Stock>();
-
-		stocks.add(Utils.getStockFromFile("PKO", "stock_data/pko_2007.csv"));
-		stocks.add(Utils.getStockFromFile("PEO", "stock_data/peo_2007.csv"));
-
-		return stocks;
-	}
-
 }
